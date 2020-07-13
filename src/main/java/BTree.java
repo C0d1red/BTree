@@ -46,13 +46,20 @@ class BTree {
                     // Choose new currentNode for continue
                     if (value < parent.values.get(childIndex)) {
                         currentNode = parent.children.get(childIndex);
-                    } else {
+                    } else if (value > parent.values.get(childIndex)) {
                         currentNode = parent.children.get(childIndex + 1);
+                    } else {
+                        return;
                     }
                 }
 
                 // Search correct child index
                 childIndex = binarySearchChildIdx(currentNode, value);
+
+                // The value is already exists
+                if (childIndex == -1) {
+                    return;
+                }
 
                 // If found the leaf - exit from while
                 if (currentNode.isLeaf()) {
@@ -63,6 +70,7 @@ class BTree {
                 parent = currentNode;
                 currentNode = currentNode.children.get(childIndex);
             }
+
 
             // Insert value to the leaf
             currentNode.addNonFull(value);
@@ -83,23 +91,24 @@ class BTree {
     }
 
     // Binary search for find index of child
+    // -1 - error (value is already exists)
     private int binarySearchChildIdx(Node node, int value){
+        int left = 0;
+        int right = node.values.size() - 1;
+        while (left <= right) {
+            int middleIndex = left + (right - left) / 2;
 
-        // Start from middle index
-        int childIndex = node.values.size() / 2;
-
-        // If value bigger then middle element - go to the right
-        if (value > node.values.get(childIndex)) {
-            while (childIndex < node.values.size() && value > node.values.get(childIndex)) {
-                childIndex++;
-            }
-        // Else - go to the left
-        } else {
-            while (childIndex > 0 && value < node.values.get(childIndex)) {
-                childIndex--;
+            if (value < node.values.get(middleIndex)) {
+                right = middleIndex -1;
+            } else if (value > node.values.get(middleIndex)){
+                left = middleIndex +1;
+            } else {
+                // If value exists in tree - return -1
+                return -1;
             }
         }
-        return childIndex;
+
+        return right +1;
     }
 
     // Print tree to console
